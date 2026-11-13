@@ -1,0 +1,807 @@
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Russo+One&family=Inter:wght@600;800;900&display=swap');
+
+:root {
+  --bg: #080915;
+  --gold: #facc15;
+  --orange: #f97316;
+  --red: #ef4444;
+  --cyan: #22d3ee;
+  --green: #4ade80;
+  --panel: rgba(13, 17, 36, 0.92);
+}
+
+* {
+  box-sizing: border-box;
+  user-select: none;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: radial-gradient(circle at 50% 20%, #1c1f4a 0%, #070812 72%);
+  color: #fff;
+  font-family: 'Inter', system-ui, sans-serif;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  overflow-x: hidden;
+}
+
+.arcade-shell {
+  width: min(1140px, 98vw);
+  background: linear-gradient(180deg, #12152e 0%, #090b18 100%);
+  border: 4px solid #334155;
+  border-radius: 16px;
+  box-shadow: 0 0 50px rgba(0, 0, 0, 0.85), inset 0 0 24px rgba(56, 189, 248, 0.14);
+  overflow: hidden;
+  position: relative;
+}
+
+.top-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 18px;
+  background: linear-gradient(90deg, #1e1b4b, #31102f, #1e1b4b);
+  border-bottom: 3px solid var(--gold);
+}
+
+.brand {
+  font-family: 'Russo One', sans-serif;
+  font-size: clamp(16px, 2.4vw, 24px);
+  letter-spacing: 1.5px;
+  background: linear-gradient(180deg, #fff3a1 0%, #facc15 45%, #ef4444 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 2px 0 #000);
+}
+
+.top-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.btn-arcade {
+  font-family: 'Russo One', sans-serif;
+  border: 2px solid var(--gold);
+  background: linear-gradient(180deg, #2b2f5c, #141733);
+  color: #fff;
+  padding: 7px 13px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 12px;
+  letter-spacing: 0.6px;
+  transition: transform 0.1s, filter 0.15s, border-color 0.15s;
+}
+
+.btn-arcade:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.18);
+}
+
+.btn-arcade.active {
+  border-color: var(--green);
+  box-shadow: 0 0 12px rgba(74, 222, 128, 0.45);
+}
+
+.btn-primary {
+  font-family: 'Russo One', sans-serif;
+  background: linear-gradient(180deg, #facc15 0%, #ea580c 100%);
+  color: #111827;
+  border: 3px solid #fff7ed;
+  padding: 13px 28px;
+  font-size: 18px;
+  border-radius: 10px;
+  cursor: pointer;
+  box-shadow: 0 6px 0 #7c2d12, 0 0 24px rgba(250, 204, 21, 0.45);
+  transition: transform 0.1s;
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+}
+
+.btn-primary:active {
+  transform: translateY(3px);
+  box-shadow: 0 2px 0 #7c2d12;
+}
+
+.screen {
+  display: none;
+  width: 100%;
+  min-height: 600px;
+  position: relative;
+}
+
+.screen.active {
+  display: block;
+}
+
+/* --- TITLE SCREEN --- */
+#screen-title {
+  background: radial-gradient(circle at 50% 35%, rgba(234, 88, 12, 0.25), transparent 60%),
+              linear-gradient(180deg, #0b102b 0%, #190d29 100%);
+  padding: 28px 20px 36px;
+  text-align: center;
+}
+
+.title-logo {
+  font-family: 'Russo One', sans-serif;
+  font-size: clamp(34px, 6vw, 68px);
+  line-height: 0.96;
+  margin: 14px 0 8px;
+  background: linear-gradient(180deg, #ffffff 0%, #fde047 38%, #f97316 70%, #dc2626 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 5px 0 #3b0764) drop-shadow(0 0 26px rgba(250, 204, 21, 0.45));
+  transform: skewX(-6deg);
+}
+
+.title-sub {
+  font-family: 'Press Start 2P', monospace;
+  font-size: clamp(10px, 1.5vw, 14px);
+  color: var(--cyan);
+  text-shadow: 0 2px 0 #000;
+  margin-bottom: 24px;
+}
+
+.title-parade {
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  gap: 8px;
+  height: 220px;
+  margin: 10px auto 26px;
+  max-width: 960px;
+}
+
+.title-parade img {
+  height: 195px;
+  width: auto;
+  object-fit: contain;
+  filter: drop-shadow(0 8px 12px rgba(0, 0, 0, 0.85));
+  transition: transform 0.2s;
+}
+
+.title-parade img:hover {
+  transform: scale(1.1) translateY(-8px);
+}
+
+.mode-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 10px;
+}
+
+.mode-card {
+  background: rgba(15, 23, 42, 0.88);
+  border: 2px solid #475569;
+  border-radius: 12px;
+  padding: 16px 22px;
+  width: 250px;
+  cursor: pointer;
+  transition: all 0.16s;
+}
+
+.mode-card:hover {
+  border-color: var(--gold);
+  transform: translateY(-4px);
+  box-shadow: 0 0 24px rgba(250, 204, 21, 0.3);
+}
+
+.mode-card h3 {
+  margin: 0 0 6px;
+  font-family: 'Russo One', sans-serif;
+  color: var(--gold);
+  font-size: 18px;
+}
+
+.mode-card p {
+  margin: 0;
+  font-size: 12px;
+  color: #cbd5e1;
+}
+
+/* --- CHARACTER SELECT SCREEN --- */
+#screen-select {
+  background: radial-gradient(circle at center, #1e293b 0%, #090d20 75%);
+  padding: 16px 18px 20px;
+}
+
+.select-header {
+  text-align: center;
+  margin-bottom: 12px;
+}
+
+.select-header h2 {
+  margin: 0;
+  font-family: 'Russo One', sans-serif;
+  font-size: 26px;
+  color: var(--gold);
+  text-shadow: 0 3px 0 #000;
+  letter-spacing: 2px;
+}
+
+.select-step-hint {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 11px;
+  color: var(--cyan);
+  margin-top: 6px;
+}
+
+.select-stage {
+  display: grid;
+  grid-template-columns: 1fr 1.15fr 1fr;
+  gap: 14px;
+  align-items: stretch;
+  min-height: 490px;
+}
+
+.podium-card {
+  background: linear-gradient(180deg, rgba(30, 41, 59, 0.85), rgba(15, 23, 42, 0.95));
+  border: 3px solid #334155;
+  border-radius: 14px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  position: relative;
+  overflow: hidden;
+}
+
+.podium-card.p1 {
+  border-color: #38bdf8;
+  box-shadow: inset 0 0 28px rgba(56, 189, 248, 0.16);
+}
+
+.podium-card.p2 {
+  border-color: #ef4444;
+  box-shadow: inset 0 0 28px rgba(239, 68, 68, 0.16);
+}
+
+.podium-tag {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 11px;
+  padding: 5px 8px;
+  border-radius: 6px;
+  display: inline-block;
+  align-self: flex-start;
+}
+
+.p1 .podium-tag { background: #0284c7; }
+.p2 .podium-tag { background: #dc2626; align-self: flex-end; }
+
+.full-body-preview {
+  height: 280px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  position: relative;
+  margin: 4px 0;
+}
+
+.full-body-preview::before {
+  content: '';
+  position: absolute;
+  bottom: 4px;
+  width: 170px;
+  height: 24px;
+  background: radial-gradient(ellipse, rgba(0,0,0,0.7) 0%, transparent 70%);
+}
+
+.full-body-preview img {
+  max-height: 268px;
+  max-width: 100%;
+  object-fit: contain;
+  filter: drop-shadow(0 8px 14px rgba(0, 0, 0, 0.85));
+  animation: popBody 0.22s ease-out;
+  position: relative;
+  z-index: 2;
+}
+
+.p2 .full-body-preview img {
+  transform: scaleX(-1);
+}
+
+@keyframes popBody {
+  from { transform: scale(0.72) translateY(22px); opacity: 0.3; }
+  to { transform: scale(1) translateY(0); opacity: 1; }
+}
+
+.fighter-meta h3 {
+  margin: 0;
+  font-family: 'Russo One', sans-serif;
+  font-size: 20px;
+  color: var(--gold);
+}
+
+.fighter-meta .sub {
+  font-size: 12px;
+  color: #93c5fd;
+  margin-bottom: 6px;
+  font-weight: 700;
+}
+
+.stat-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 10px;
+  margin: 3px 0;
+  font-weight: 800;
+  color: #cbd5e1;
+}
+
+.stat-row span { width: 72px; }
+.stat-bar {
+  flex: 1;
+  height: 7px;
+  background: #0f172a;
+  border-radius: 4px;
+  overflow: hidden;
+}
+.stat-bar > i {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, #facc15, #f97316);
+}
+
+.special-box {
+  margin-top: 6px;
+  background: rgba(0, 0, 0, 0.45);
+  border-left: 3px solid var(--gold);
+  padding: 5px 8px;
+  border-radius: 4px;
+  font-size: 10.5px;
+  line-height: 1.28;
+}
+
+.special-box strong {
+  color: var(--gold);
+  display: block;
+}
+
+.podium-confirm-row {
+  margin-top: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.btn-confirm-podium {
+  flex: 1;
+  font-family: 'Russo One', sans-serif;
+  border: 2px solid #4ade80;
+  background: linear-gradient(180deg, #16a34a, #14532d);
+  color: #fff;
+  padding: 8px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 12px;
+  letter-spacing: 0.6px;
+  transition: transform 0.1s, filter 0.15s;
+}
+
+.btn-confirm-podium:hover {
+  filter: brightness(1.18);
+  transform: translateY(-1px);
+}
+
+.btn-confirm-podium.locked {
+  border-color: #facc15;
+  background: linear-gradient(180deg, #eab308, #b45309);
+  color: #111827;
+}
+
+.podium-card.confirmed {
+  box-shadow: inset 0 0 32px rgba(74, 222, 128, 0.35), 0 0 18px rgba(74, 222, 128, 0.35);
+}
+
+.confirmed-stamp {
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  background: #16a34a;
+  color: #fff;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 9px;
+  padding: 5px 7px;
+  border-radius: 5px;
+  border: 2px solid #bbf7d0;
+  z-index: 4;
+  display: none;
+}
+
+.podium-card.p2 .confirmed-stamp {
+  right: auto;
+  left: 12px;
+}
+
+.podium-card.confirmed .confirmed-stamp {
+  display: block;
+}
+
+.btn-primary:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  filter: grayscale(0.5);
+  transform: none;
+}
+
+/* Roster Grid (Profile Photos!) */
+.roster-center {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+}
+
+.roster-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  width: 100%;
+}
+
+.roster-slot {
+  position: relative;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 3px solid #475569;
+  background: #0f172a;
+  cursor: pointer;
+  aspect-ratio: 1 / 1;
+  transition: transform 0.12s, border-color 0.12s;
+}
+
+.roster-slot:nth-child(7) {
+  grid-column: 2;
+}
+
+.roster-slot:hover {
+  transform: scale(1.05);
+  border-color: #fde047;
+}
+
+.roster-slot img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 20%;
+  display: block;
+}
+
+.roster-slot .slot-name {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(transparent, rgba(0,0,0,0.9));
+  padding: 12px 4px 4px;
+  font-family: 'Russo One', sans-serif;
+  font-size: 11px;
+  text-align: center;
+  text-shadow: 0 1px 2px #000;
+}
+
+.roster-slot.sel-p1 {
+  border-color: #38bdf8;
+  box-shadow: 0 0 16px rgba(56, 189, 248, 0.75);
+}
+
+.roster-slot.sel-p2 {
+  border-color: #ef4444;
+  box-shadow: 0 0 16px rgba(239, 68, 68, 0.75);
+}
+
+.roster-slot.sel-p1.sel-p2 {
+  border-color: var(--gold);
+  box-shadow: 0 0 18px rgba(250, 204, 21, 0.85);
+}
+
+.slot-badge {
+  position: absolute;
+  top: 4px;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 9px;
+  padding: 2px 5px;
+  border-radius: 4px;
+}
+.badge-p1 { left: 4px; background: #0284c7; }
+.badge-p2 { right: 4px; background: #dc2626; }
+
+.select-footer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+}
+
+/* --- VS SPLASH SCREEN --- */
+#screen-vs {
+  background: linear-gradient(125deg, #0f172a 0%, #3b0764 48%, #450a0a 100%);
+  min-height: 600px;
+  display: none;
+  align-items: center;
+  justify-content: space-around;
+  padding: 30px;
+  position: relative;
+}
+
+#screen-vs.active {
+  display: flex;
+}
+
+.vs-fighter {
+  text-align: center;
+  z-index: 2;
+}
+
+.vs-fighter img {
+  height: 360px;
+  object-fit: contain;
+  filter: drop-shadow(0 12px 20px rgba(0, 0, 0, 0.9));
+}
+
+.vs-fighter.right img {
+  transform: scaleX(-1);
+}
+
+.vs-fighter h2 {
+  font-family: 'Russo One', sans-serif;
+  font-size: 28px;
+  color: var(--gold);
+  margin: 8px 0 2px;
+  text-shadow: 0 3px 0 #000;
+}
+
+.vs-center {
+  font-family: 'Russo One', sans-serif;
+  font-size: 86px;
+  font-style: italic;
+  background: linear-gradient(180deg, #fff, #facc15, #ef4444);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 6px 0 #000);
+  animation: pulseVs 0.6s infinite alternate;
+}
+
+@keyframes pulseVs {
+  from { transform: scale(1); }
+  to { transform: scale(1.12); }
+}
+
+/* --- FIGHT SCREEN --- */
+#screen-fight {
+  background: #000;
+  min-height: auto;
+}
+
+.hud-overlay {
+  position: absolute;
+  top: 10px;
+  left: 16px;
+  right: 16px;
+  display: grid;
+  grid-template-columns: 1fr 78px 1fr;
+  gap: 10px;
+  align-items: start;
+  pointer-events: none;
+  z-index: 5;
+}
+
+.hud-side {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.hud-side.p2 {
+  align-items: flex-end;
+}
+
+.hud-name-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+}
+
+.hud-side.p2 .hud-name-row {
+  flex-direction: row-reverse;
+}
+
+.hud-portrait {
+  width: 42px;
+  height: 42px;
+  border-radius: 8px;
+  border: 2px solid var(--gold);
+  object-fit: cover;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.8);
+}
+
+.hud-name {
+  font-family: 'Russo One', sans-serif;
+  font-size: 16px;
+  color: #fff;
+  text-shadow: 2px 2px 0 #000;
+}
+
+.round-stars {
+  font-size: 15px;
+  color: var(--gold);
+  text-shadow: 0 2px 0 #000;
+  margin-left: auto;
+}
+.hud-side.p2 .round-stars {
+  margin-left: 0;
+  margin-right: auto;
+}
+
+.hp-track {
+  width: 100%;
+  height: 22px;
+  background: #450a0a;
+  border: 3px solid #f8fafc;
+  box-shadow: 0 3px 0 #000;
+  transform: skewX(-14deg);
+  overflow: hidden;
+  position: relative;
+}
+
+.hud-side.p2 .hp-track {
+  transform: skewX(14deg);
+}
+
+.hp-trail {
+  position: absolute;
+  top: 0; bottom: 0; left: 0;
+  background: #ef4444;
+  transition: width 0.35s ease;
+}
+
+.hp-fill {
+  position: absolute;
+  top: 0; bottom: 0; left: 0;
+  background: linear-gradient(180deg, #fef08a 0%, #facc15 50%, #eab308 100%);
+}
+
+.hud-side.p2 .hp-trail,
+.hud-side.p2 .hp-fill {
+  left: auto;
+  right: 0;
+}
+
+.super-track {
+  width: 72%;
+  height: 9px;
+  background: #0f172a;
+  border: 2px solid #94a3b8;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.super-fill {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, #06b6d4, #a855f7, #facc15);
+}
+
+.super-fill.ready {
+  animation: superGlow 0.45s infinite alternate;
+}
+
+@keyframes superGlow {
+  from { filter: brightness(1); }
+  to { filter: brightness(1.6); }
+}
+
+.hud-timer {
+  background: linear-gradient(180deg, #1e293b, #020617);
+  border: 3px solid var(--gold);
+  border-radius: 10px;
+  text-align: center;
+  padding: 4px 0;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 22px;
+  color: var(--gold);
+  text-shadow: 0 3px 0 #000;
+}
+
+.ko-badge {
+  font-family: 'Russo One', sans-serif;
+  font-size: 11px;
+  color: #fca5a5;
+  margin-top: 2px;
+}
+
+#game-canvas {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 16 / 9;
+  background: #111;
+}
+
+.controls-bar {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 14px;
+  background: #0b0f24;
+  border-top: 2px solid #334155;
+  font-size: 12px;
+  color: #cbd5e1;
+}
+
+.kbd {
+  display: inline-block;
+  background: #1e293b;
+  border: 1px solid #64748b;
+  border-bottom-width: 3px;
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-family: monospace;
+  font-weight: 800;
+  color: var(--gold);
+}
+
+/* Victory Modal */
+.victory-modal {
+  position: absolute;
+  inset: 0;
+  background: rgba(5, 8, 22, 0.86);
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 20px;
+  z-index: 20;
+}
+
+.victory-modal.active {
+  display: flex;
+}
+
+.victory-modal img {
+  height: 230px;
+  object-fit: contain;
+  filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.9));
+}
+
+.victory-modal h2 {
+  font-family: 'Russo One', sans-serif;
+  font-size: 38px;
+  color: var(--gold);
+  margin: 10px 0 6px;
+  text-shadow: 0 4px 0 #000;
+}
+
+.victory-quote {
+  font-size: 16px;
+  font-style: italic;
+  color: #e2e8f0;
+  background: rgba(30, 41, 59, 0.85);
+  border: 2px solid #475569;
+  padding: 10px 18px;
+  border-radius: 10px;
+  margin-bottom: 18px;
+  max-width: 560px;
+}
+
+.victory-buttons {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  justify-content: center;
+}

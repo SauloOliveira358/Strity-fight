@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>STREATY FIGHT 2: TURBO BRASIL</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="arcade-shell">
+    <header class="top-bar">
+      <div class="brand">STREATY FIGHT 2 • TURBO BRASIL</div>
+      <div class="top-actions">
+        <button id="btn-music" class="btn-arcade active" title="Ligar/Desligar Música">🎵 MÚSICA: ON</button>
+        <button id="btn-mute" class="btn-arcade active" title="Ligar/Desligar Sons">🔊 SOM: ON</button>
+        <button id="btn-home" class="btn-arcade">🏠 MENU</button>
+      </div>
+    </header>
+
+    <!-- SCREEN 1: TITLE & MODE SELECT -->
+    <section id="screen-title" class="screen active">
+      <div class="title-logo">STREATY FIGHT 2<br />TURBO BRASIL</div>
+      <div class="title-sub">EDIÇÃO OFICIAL DA GALERA • COM GOLPES &amp; SONS ENGRAÇADOS</div>
+
+      <div id="title-parade" class="title-parade"></div>
+
+      <div class="mode-buttons">
+        <div class="mode-card" data-mode="arcade">
+          <h3>🏆 MODO ARCADE</h3>
+          <p>Enfrente toda a galera na sequência até virar o Campeão Supremo!</p>
+        </div>
+        <div class="mode-card" data-mode="cpu">
+          <h3>🥊 1P VS CPU</h3>
+          <p>Escolha seu lutador e o rival da galera para uma luta rápida (Melhor de 3).</p>
+        </div>
+        <div class="mode-card" data-mode="versus">
+          <h3>👥 2P VERSUS LOCAL</h3>
+          <p>Dois jogadores no mesmo teclado! P1 (WASD + F/G/H) vs P2 (Setas + K/L/P).</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- SCREEN 2: CHARACTER SELECT -->
+    <section id="screen-select" class="screen">
+      <div class="select-header">
+        <h2>SELECIONE SEU LUTADOR</h2>
+        <div id="select-hint" class="select-step-hint">CLIQUE NA FOTO DE PERFIL PARA REVELAR O CORPO INTEIRO!</div>
+      </div>
+
+      <div class="select-stage">
+        <!-- P1 Podium -->
+        <div class="podium-card p1" id="p1-podium">
+          <div class="confirmed-stamp">✔ CONFIRMADO</div>
+          <div class="podium-tag">PLAYER 1</div>
+          <div class="full-body-preview" id="p1-preview"></div>
+          <div class="fighter-meta" id="p1-meta"></div>
+          <div class="podium-confirm-row">
+            <button id="btn-confirm-p1" class="btn-confirm-podium">✅ CONFIRMAR P1</button>
+          </div>
+        </div>
+
+        <!-- Center Profile Grid -->
+        <div class="roster-center">
+          <div class="roster-grid" id="roster-grid"></div>
+          <div class="select-footer">
+            <div style="display:flex; gap:8px; align-items:center;">
+              <label for="cpu-diff" style="font-size:12px; color:#94a3b8; font-weight:700;">Dificuldade CPU:</label>
+              <select id="cpu-diff" class="btn-arcade" style="padding:4px 8px;">
+                <option value="easy">Fácil (Zoeira)</option>
+                <option value="normal" selected>Normal (Arcade)</option>
+                <option value="hard">Apelão (Turbo)</option>
+              </select>
+            </div>
+            <button id="btn-start-fight" class="btn-primary" disabled>⚡ CONFIRME OS LUTADORES! ⚡</button>
+          </div>
+        </div>
+
+        <!-- P2 Podium -->
+        <div class="podium-card p2" id="p2-podium">
+          <div class="confirmed-stamp">✔ CONFIRMADO</div>
+          <div class="podium-tag" id="p2-tag">CPU / PLAYER 2</div>
+          <div class="full-body-preview" id="p2-preview"></div>
+          <div class="fighter-meta" id="p2-meta"></div>
+          <div class="podium-confirm-row">
+            <button id="btn-confirm-p2" class="btn-confirm-podium">✅ CONFIRMAR RIVAL</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SCREEN 3: VS SPLASH -->
+    <section id="screen-vs" class="screen">
+      <div class="vs-fighter left" id="vs-p1"></div>
+      <div class="vs-center">VS</div>
+      <div class="vs-fighter right" id="vs-p2"></div>
+    </section>
+
+    <!-- SCREEN 4: FIGHT ARENA -->
+    <section id="screen-fight" class="screen">
+      <div class="hud-overlay">
+        <div class="hud-side p1">
+          <div class="hud-name-row">
+            <img id="hud-p1-img" class="hud-portrait" src="" alt="P1" />
+            <span id="hud-p1-name" class="hud-name">P1</span>
+            <span id="hud-p1-stars" class="round-stars"></span>
+          </div>
+          <div class="hp-track">
+            <div id="hud-p1-trail" class="hp-trail" style="width:100%"></div>
+            <div id="hud-p1-hp" class="hp-fill" style="width:100%"></div>
+          </div>
+          <div class="super-track"><div id="hud-p1-super" class="super-fill"></div></div>
+        </div>
+
+        <div class="hud-timer">
+          <div id="hud-time">99</div>
+          <div class="ko-badge">K.O.</div>
+        </div>
+
+        <div class="hud-side p2">
+          <div class="hud-name-row">
+            <img id="hud-p2-img" class="hud-portrait" src="" alt="P2" />
+            <span id="hud-p2-name" class="hud-name">P2</span>
+            <span id="hud-p2-stars" class="round-stars"></span>
+          </div>
+          <div class="hp-track">
+            <div id="hud-p2-trail" class="hp-trail" style="width:100%"></div>
+            <div id="hud-p2-hp" class="hp-fill" style="width:100%"></div>
+          </div>
+          <div class="super-track"><div id="hud-p2-super" class="super-fill"></div></div>
+        </div>
+      </div>
+
+      <canvas id="game-canvas" width="1120" height="630"></canvas>
+
+      <div class="controls-bar">
+        <div>
+          <strong>P1:</strong>
+          <span class="kbd">A</span> <span class="kbd">D</span> Mover (2x Dash!) •
+          <span class="kbd">W</span> Pular •
+          <span class="kbd">S</span> Defender •
+          <span class="kbd">F</span> Golpe 1 •
+          <span class="kbd">G</span> Golpe 2 •
+          <span class="kbd">H</span> <strong>ESP. 1</strong> •
+          <span class="kbd">J</span> <strong>ESP. 2</strong>
+        </div>
+        <div id="p2-controls-hint">
+          <strong>P2 (2P):</strong>
+          <span class="kbd">←</span> <span class="kbd">→</span> Mover (2x Dash!) •
+          <span class="kbd">↑</span> Pular •
+          <span class="kbd">↓</span> Defender •
+          <span class="kbd">K</span> Golpe 1 •
+          <span class="kbd">L</span> Golpe 2 •
+          <span class="kbd">P</span> <strong>ESP. 1</strong> •
+          <span class="kbd">O</span> <strong>ESP. 2</strong>
+        </div>
+      </div>
+
+      <!-- Victory Modal -->
+      <div id="victory-modal" class="victory-modal">
+        <img id="victory-img" src="" alt="Vencedor" />
+        <h2 id="victory-title">VENCEDOR!</h2>
+        <div id="victory-quote" class="victory-quote"></div>
+        <div class="victory-buttons">
+          <button id="btn-next-match" class="btn-primary">🔥 PRÓXIMA LUTA</button>
+          <button id="btn-rematch" class="btn-arcade" style="padding:12px 20px; font-size:15px;">🔄 REVANCHE</button>
+          <button id="btn-back-select" class="btn-arcade" style="padding:12px 20px; font-size:15px;">🎭 TROCAR LUTADOR</button>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <script src="src/fighters.js"></script>
+  <script src="src/audio.js"></script>
+  <script src="src/game.js"></script>
+</body>
+</html>
