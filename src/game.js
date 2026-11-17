@@ -6,13 +6,133 @@
   const H = canvas.height;
   const GROUND_Y = 548;
 
-  // Preload full-body fighter sprites & real prop images
+  // Visible bounding-box & pose-scale metadata for all action sprites (ensures consistent ground alignment & proportions across transitions)
+  const SPRITE_BOUNDS = {
+    'assets/sprites/alexandre-especial.png': { sx: 12, sy: 28, sw: 267, sh: 309, poseScale: 0.96 },
+    'assets/sprites/alexandre-golpe.png':    { sx: 12, sy: 28, sw: 267, sh: 309, poseScale: 0.96 },
+    'assets/sprites/alexandre-parado.png':   { sx: 92, sy: 30, sw: 149, sh: 451, poseScale: 1.00 },
+    'assets/sprites/alexandre-pulando.png':  { sx: 38, sy: 26, sw: 151, sh: 331, poseScale: 0.95 },
+    'assets/sprites/diogo-especial.png':     { sx: 0,  sy: 0,  sw: 233, sh: 303, poseScale: 0.90 },
+    'assets/sprites/diogo-golpe.png':        { sx: 6,  sy: 6,  sw: 263, sh: 303, poseScale: 0.95 },
+    'assets/sprites/diogo-mover.png':        { sx: 18, sy: 44, sw: 247, sh: 285, poseScale: 0.92 },
+    'assets/sprites/diogo-parado.png':       { sx: 0,  sy: 0,  sw: 309, sh: 519, poseScale: 1.00 },
+    'assets/sprites/diogo-pular.png':        { sx: 18, sy: 4,  sw: 179, sh: 305, poseScale: 0.92 },
+    'assets/sprites/kamile-especial.png':    { sx: 86, sy: 58, sw: 737, sh: 1227, poseScale: 1.05 },
+    'assets/sprites/kamile-golpe.png':       { sx: 6,  sy: 94, sw: 631, sh: 1273, poseScale: 0.98 },
+    'assets/sprites/kamile-mover.png':       { sx: 0,  sy: 48, sw: 575, sh: 1297, poseScale: 0.98 },
+    'assets/sprites/kamile-parado.png':      { sx: 0,  sy: 0,  sw: 279, sh: 519,  poseScale: 1.00 },
+    'assets/sprites/kamile-pular.png':       { sx: 20, sy: 42, sw: 415, sh: 989,  poseScale: 0.90 },
+    'assets/sprites/larissa-especial.png':   { sx: 0,  sy: 0,  sw: 277, sh: 383, poseScale: 1.12 },
+    'assets/sprites/larissa-golpe.png':      { sx: 10, sy: 28, sw: 229, sh: 331, poseScale: 0.97 },
+    'assets/sprites/larissa-movendo.png':    { sx: 26, sy: 30, sw: 241, sh: 331, poseScale: 0.96 },
+    'assets/sprites/larissa-parado.png':     { sx: 4,  sy: 2,  sw: 303, sh: 507, poseScale: 1.00 },
+    'assets/sprites/larissa-pulando.png':    { sx: 22, sy: 16, sw: 163, sh: 345, poseScale: 0.95 },
+    'assets/sprites/saulo-especial.png':     { sx: 28, sy: 10, sw: 561, sh: 811, poseScale: 0.97 },
+    'assets/sprites/saulo-golpe.png':        { sx: 28, sy: 10, sw: 561, sh: 811, poseScale: 0.97 },
+    'assets/sprites/saulo-mover.png':        { sx: 0,  sy: 0,  sw: 189, sh: 519, poseScale: 0.99 },
+    'assets/sprites/saulo-parado.png':       { sx: 168, sy: 28, sw: 321, sh: 875, poseScale: 1.00 },
+    'assets/sprites/saulo-pulando.png':      { sx: 12, sy: 24, sw: 523, sh: 833, poseScale: 0.96 },
+    'assets/sprites/stenio-especial.png':    { sx: 2,  sy: 22, sw: 309, sh: 295, poseScale: 0.96 },
+    'assets/sprites/stenio-golpe.png':       { sx: 2,  sy: 4,  sw: 251, sh: 283, poseScale: 0.96 },
+    'assets/sprites/stenio-mover.png':       { sx: 2,  sy: 88, sw: 339, sh: 289, poseScale: 0.85 },
+    'assets/sprites/stenio-parado.png':      { sx: 2,  sy: 2,  sw: 443, sh: 477, poseScale: 1.00 },
+    'assets/sprites/stenio-pular.png':       { sx: 6,  sy: 30, sw: 223, sh: 255, poseScale: 0.90 },
+    'assets/sprites/thiago-especial.png':    { sx: 18, sy: 24, sw: 397, sh: 451, poseScale: 0.95 },
+    'assets/sprites/thiago-golpe.png':       { sx: 24, sy: 8,  sw: 329, sh: 465, poseScale: 0.97 },
+    'assets/sprites/thiago-mover.png':       { sx: 24, sy: 10, sw: 225, sh: 467, poseScale: 0.98 },
+    'assets/sprites/thiago-parado.png':      { sx: 48, sy: 12, sw: 171, sh: 501, poseScale: 1.00 },
+    'assets/sprites/thiago-pular.png':       { sx: 20, sy: 12, sw: 299, sh: 479, poseScale: 0.95 }
+  };
+
+  // Preload all action sprites (idle, move, jump, attack, special) for each fighter
   const spriteImages = {};
   window.FIGHTERS.forEach(f => {
-    const img = new Image();
-    img.src = f.sprite;
-    spriteImages[f.id] = img;
+    const map = f.sprites || {
+      idle: f.sprite,
+      move: f.sprite,
+      jump: f.sprite,
+      attack: f.sprite,
+      special: f.sprite
+    };
+    const loadedSet = {};
+    ['idle', 'move', 'jump', 'attack', 'special'].forEach(key => {
+      const src = map[key] || f.sprite;
+      const img = new Image();
+      img.dataset.srcKey = src;
+      img.src = src;
+      loadedSet[key] = img;
+    });
+    spriteImages[f.id] = loadedSet;
   });
+
+  function getFighterSpriteByKey(fighterId, actionKey) {
+    const set = spriteImages[fighterId];
+    if (!set) return null;
+    const candidate = set[actionKey];
+    if (candidate && candidate.complete && candidate.naturalWidth > 0) {
+      return candidate;
+    }
+    return set.idle || null;
+  }
+
+  function resolveFighterActionKey(f) {
+    // 1. Special moves always show special pose
+    if (f.state === 'special' || f.state === 'special2') {
+      return 'special';
+    }
+    // 2. Basic attacks show golpe/attack pose (with crisp wind-up & recovery transition)
+    if (f.state === 'basic1' || f.state === 'basic2') {
+      return 'attack';
+    }
+    // 3. Airborne / Jump / Knockdown states show jump/air pose
+    if (f.state === 'jump' || f.state === 'fallen' || f.state === 'ko' || f.y < GROUND_Y - 2) {
+      return 'jump';
+    }
+    // 4. Hurt state alternates into dynamic reaction pose
+    if (f.state === 'hurt') {
+      return f.stateTimer > 6 ? 'jump' : 'move';
+    }
+    // 5. Walking, Dashing or Crouching/Blocking uses movement/guard sprite
+    if (f.state === 'walk' || f.state === 'dash' || f.state === 'crouch') {
+      // For Alexandre (whose move sprite shares pulando), alternate smoothly on walk stride
+      if (f.def.id === 'alexandre' && f.state === 'walk') {
+        return Math.floor(f.animTime / 8) % 2 === 0 ? 'move' : 'idle';
+      }
+      return 'move';
+    }
+    // 6. Victory celebration alternates between special & idle pose
+    if (f.state === 'win') {
+      return Math.floor(f.bobPhase * 0.8) % 2 === 0 ? 'special' : 'idle';
+    }
+    return 'idle';
+  }
+
+  function drawSpriteNormalized(img, baseTargetH, extraScaleX = 1, extraScaleY = 1) {
+    if (!img || !img.complete || img.naturalWidth === 0) return { drawW: baseTargetH * 0.5, drawH: baseTargetH };
+    const srcKey = img.dataset.srcKey || '';
+    const bounds = SPRITE_BOUNDS[srcKey] || {
+      sx: 0,
+      sy: 0,
+      sw: img.naturalWidth,
+      sh: img.naturalHeight,
+      poseScale: 1.0
+    };
+    const drawH = baseTargetH * (bounds.poseScale || 1.0) * extraScaleY;
+    const aspect = bounds.sw / bounds.sh;
+    const drawW = baseTargetH * (bounds.poseScale || 1.0) * aspect * extraScaleX;
+    ctx.drawImage(
+      img,
+      bounds.sx,
+      bounds.sy,
+      bounds.sw,
+      bounds.sh,
+      -drawW / 2,
+      -drawH,
+      drawW,
+      drawH
+    );
+    return { drawW, drawH };
+  }
 
   const propImages = {};
   ['cachaca51', 'escavadeira', 'chicote', 'passatempo', 'gpu', 'claudinho', 'moto_xre'].forEach(name => {
@@ -268,7 +388,9 @@
   function renderSinglePodium(side, f) {
     const prev = document.getElementById(`${side}-preview`);
     const meta = document.getElementById(`${side}-meta`);
-    prev.innerHTML = `<img src="${f.sprite}" alt="${f.name}" />`;
+    const isConfirmed = side === 'p1' ? p1Confirmed : (p2Confirmed && gameMode !== 'arcade');
+    const previewSprite = (isConfirmed && f.sprites && f.sprites.special) ? f.sprites.special : f.sprite;
+    prev.innerHTML = `<img src="${previewSprite}" alt="${f.name}" />`;
     meta.innerHTML = `
       <h3>${f.name}</h3>
       <div class="sub">${f.subtitle}</div>
@@ -360,6 +482,19 @@
     }
   }
 
+  function setFighterState(f, nextState, duration = 0) {
+    if (f.state !== nextState) {
+      f.prevState = f.state;
+      f.state = nextState;
+      f.animTime = 0;
+      f.transitionTimer = 6;
+    }
+    if (duration > 0 || ['idle', 'walk', 'crouch', 'jump', 'ko', 'win'].includes(nextState)) {
+      f.stateTimer = duration;
+      f.stateDuration = duration;
+    }
+  }
+
   function createFighterInstance(def, side) {
     return {
       def,
@@ -374,7 +509,13 @@
       superMeter: 100,
       wins: 0,
       state: 'idle', // 'idle' | 'walk' | 'dash' | 'crouch' | 'jump' | 'basic1' | 'basic2' | 'special' | 'special2' | 'hurt' | 'fallen' | 'ko' | 'win'
+      prevState: 'idle',
       stateTimer: 0,
+      stateDuration: 0,
+      animTime: 0,
+      transitionTimer: 0,
+      landTimer: 0,
+      stepDustTimer: 0,
       attackHitDone: false,
       stunTimer: 0,
       hitFlash: 0,
@@ -481,8 +622,7 @@
 
   function triggerDash(f, dir) {
     if (['hurt', 'fallen', 'ko', 'special', 'special2', 'win'].includes(f.state) || f.stunTimer > 0) return;
-    f.state = 'dash';
-    f.stateTimer = 12;
+    setFighterState(f, 'dash', 12);
     f.vx = dir * 13.5;
     SFX.playDash();
     for (let i = 0; i < 6; i++) {
@@ -493,29 +633,35 @@
   function triggerJump(f) {
     if (f.y >= GROUND_Y - 1 && ['idle', 'walk', 'crouch', 'dash'].includes(f.state) && f.stunTimer <= 0) {
       f.vy = f.def.jumpVel;
-      f.state = 'jump';
+      setFighterState(f, 'jump', 0);
       SFX.playJump();
+      for (let i = 0; i < 5; i++) {
+        spawnParticle(f.x + (Math.random() - 0.5) * 30, GROUND_Y - 4, (Math.random() - 0.5) * 3, -Math.random() * 2.2, '#e2e8f0', 5);
+      }
     }
   }
 
   function triggerBasic(f, opp, slot) {
     if (['hurt', 'fallen', 'ko', 'special', 'special2', 'win'].includes(f.state) || f.stunTimer > 0) return;
-    if (f.state === 'basic1' || f.state === 'basic2') return;
+    // Allow chaining basic1 -> basic2 after hit or mid-animation; otherwise block re-triggering during active attack
+    const canChainBasic2 = f.state === 'basic1' && slot === 2 && (f.attackHitDone || f.stateTimer <= 10);
+    if ((f.state === 'basic1' || f.state === 'basic2') && !canChainBasic2) return;
 
     const id = f.def.id;
-    f.state = slot === 1 ? 'basic1' : 'basic2';
-    f.stateTimer = slot === 1 ? 16 : 23;
+    let duration = slot === 1 ? 18 : 24;
+    if (id === 'larissa') duration = slot === 1 ? 21 : 26;
+    else if (id === 'kamile' && slot === 2) duration = 26;
+
+    setFighterState(f, slot === 1 ? 'basic1' : 'basic2', duration);
     f.attackHitDone = false;
 
     // Signature basic moves!
     if (id === 'larissa') {
       // Larissa dá chicotadas nos ataques básicos!
-      f.stateTimer = slot === 1 ? 20 : 25;
       SFX.playWhipCrack();
       f.vx = f.facing * 3.0;
     } else if (id === 'kamile' && slot === 2) {
       // Kamile pega e faz ataque de cabelo espichando!
-      f.stateTimer = 26;
       SFX.playHairStretch();
       f.vx = f.facing * 2.5;
       spawnPopup(f.x, f.y - 235, 'CHICOTE DE CABELO!', '#f472b6', 15);
@@ -581,8 +727,7 @@
     }
 
     f.superMeter = Math.max(0, f.superMeter - 50);
-    f.state = slot === 1 ? 'special' : 'special2';
-    f.stateTimer = 34;
+    setFighterState(f, slot === 1 ? 'special' : 'special2', 34);
     f.attackHitDone = false;
     matchState.hitStop = 6;
     matchState.shake = 8;
@@ -675,8 +820,7 @@
 
       case 'throw_moto':
         // Stênio arremessa a moto longa distância, cai no chão e toma dano próprio!
-        f.state = 'fallen';
-        f.stateTimer = 42;
+        setFighterState(f, 'fallen', 42);
         f.vx = -dir * 4.5;
         f.vy = -6.5;
         f.hp = Math.max(1, f.hp - 8);
@@ -723,8 +867,7 @@
 
       case 'hair_whip_super':
         // Kamile espicha super cabelo cacheado de longo alcance!
-        f.state = 'special2';
-        f.stateTimer = 32;
+        setFighterState(f, 'special2', 32);
         break;
 
       case 'chained_minions':
@@ -741,8 +884,7 @@
         break;
 
       case 'whip_flurry':
-        f.state = 'special2';
-        f.stateTimer = 36;
+        setFighterState(f, 'special2', 36);
         f.vx = dir * 5.0;
         break;
 
@@ -770,8 +912,7 @@
 
       case 'gpu_smash':
         // Alexandre vem correndo com uma Placa de Vídeo RTX que quebra na cabeça do rival!
-        f.state = 'special2';
-        f.stateTimer = 36;
+        setFighterState(f, 'special2', 36);
         f.vx = dir * 15.2;
         break;
 
@@ -842,8 +983,7 @@
       }
     } else {
       defender.hp = Math.max(0, defender.hp - dmg);
-      defender.state = 'hurt';
-      defender.stateTimer = isHeavy ? 24 : 15;
+      setFighterState(defender, 'hurt', isHeavy ? 24 : 15);
       defender.hitFlash = 10;
       defender.vx = (attacker.x < defender.x ? 1 : -1) * knockback;
       if (isHeavy) defender.vy = -5.5;
@@ -890,11 +1030,11 @@
   function triggerKO(winner, loser) {
     matchState.phase = 'ko';
     matchState.phaseTimer = 135;
-    loser.state = 'ko';
+    setFighterState(loser, 'ko', 0);
     loser.vy = -8;
     loser.vx = (winner.x < loser.x ? 1 : -1) * 9;
     winner.wins++;
-    winner.state = 'win';
+    setFighterState(winner, 'win', 0);
     matchState.bannerText = 'K.O.!!';
     matchState.subBannerText = `${winner.def.shortName} VENCEU O ROUND!`;
     matchState.shake = 18;
@@ -911,11 +1051,14 @@
     }
 
     if (f.state === 'dash') {
-      f.ghosts.push({ x: f.x, y: f.y, facing: f.facing, life: 10 });
+      f.ghosts.push({ x: f.x, y: f.y, facing: f.facing, actionKey: 'move', life: 10 });
       return;
     }
 
     if (f.state === 'special' || f.state === 'special2') {
+      if (Math.abs(f.vx) > 8 && Math.floor(f.animTime) % 2 === 0) {
+        f.ghosts.push({ x: f.x, y: f.y, facing: f.facing, actionKey: 'special', life: 9 });
+      }
       // Melee/Dash specials hit detection
       if (f.def.id === 'stenio' && f.state === 'special' && !f.attackHitDone) {
         if (Math.abs(f.x - opp.x) < 125 && Math.abs(f.y - opp.y) < 120) {
@@ -948,7 +1091,7 @@
     }
 
     if (f.state === 'basic1' || f.state === 'basic2') {
-      const hitFrame = f.state === 'basic1' ? 9 : 13;
+      const hitFrame = f.state === 'basic1' ? 10 : 14;
       if (!f.attackHitDone && f.stateTimer <= hitFrame) {
         let reach = f.state === 'basic1' ? 120 : 145;
         let customMsg = null;
@@ -987,13 +1130,18 @@
 
     if (f.y >= GROUND_Y - 1) {
       if (crouch) {
-        f.state = 'crouch';
+        setFighterState(f, 'crouch', 0);
         f.vx *= 0.6;
       } else if (move !== 0) {
-        f.state = 'walk';
+        setFighterState(f, 'walk', 0);
         f.vx = move * f.def.speed;
+        f.stepDustTimer += dt;
+        if (f.stepDustTimer >= 14) {
+          f.stepDustTimer = 0;
+          spawnParticle(f.x - move * 16, GROUND_Y - 4, -move * (1.2 + Math.random() * 1.5), -Math.random() * 1.2, 'rgba(203,213,225,0.65)', 4);
+        }
       } else {
-        f.state = 'idle';
+        setFighterState(f, 'idle', 0);
         f.vx *= 0.72;
       }
     } else {
@@ -1036,6 +1184,9 @@
 
   function updatePhysics(f, opp, dt) {
     f.bobPhase += 0.12 * dt;
+    f.animTime += dt;
+    if (f.transitionTimer > 0) f.transitionTimer = Math.max(0, f.transitionTimer - dt);
+    if (f.landTimer > 0) f.landTimer = Math.max(0, f.landTimer - dt);
     if (f.hitFlash > 0) f.hitFlash -= dt;
     if (f.comboResetTimer > 0) {
       f.comboResetTimer -= dt;
@@ -1050,18 +1201,26 @@
     if (f.stateTimer > 0) {
       f.stateTimer -= dt;
       if (f.stateTimer <= 0 && !['ko', 'win'].includes(f.state)) {
-        f.state = f.y < GROUND_Y - 1 ? 'jump' : 'idle';
+        setFighterState(f, f.y < GROUND_Y - 1 ? 'jump' : 'idle', 0);
       }
     }
 
+    const wasAirborne = f.y < GROUND_Y - 1;
     f.x += f.vx * dt;
     f.y += f.vy * dt;
 
-    if (f.y < GROUND_Y) f.vy += 0.78 * dt;
-    else {
+    if (f.y < GROUND_Y) {
+      f.vy += 0.78 * dt;
+    } else {
       f.y = GROUND_Y;
+      if (wasAirborne) {
+        f.landTimer = 8;
+        for (let i = 0; i < 6; i++) {
+          spawnParticle(f.x + (Math.random() - 0.5) * 34, GROUND_Y - 3, (Math.random() - 0.5) * 4, -Math.random() * 1.8, '#cbd5e1', 5);
+        }
+      }
       f.vy = 0;
-      if (f.state === 'jump') f.state = 'idle';
+      if (f.state === 'jump') setFighterState(f, 'idle', 0);
     }
 
     if (!['walk', 'dash', 'special', 'special2'].includes(f.state)) {
@@ -1365,20 +1524,19 @@
   }
 
   function drawFighter(f) {
-    const img = spriteImages[f.def.id];
+    const actionKey = resolveFighterActionKey(f);
+    const img = getFighterSpriteByKey(f.def.id, actionKey);
     const targetH = 265 * f.def.scale;
-    const aspect = img.naturalWidth && img.naturalHeight ? img.naturalWidth / img.naturalHeight : 0.45;
-    const drawW = targetH * aspect;
-    const drawH = targetH;
 
-    // Dash Ghost Afterimages
+    // Dash & Special Ghost Afterimages
     f.ghosts.forEach(g => {
-      if (!img.complete) return;
+      const gImg = getFighterSpriteByKey(f.def.id, g.actionKey || 'move');
+      if (!gImg || !gImg.complete) return;
       ctx.save();
       ctx.globalAlpha = (g.life / 10) * 0.35;
       ctx.translate(g.x, g.y);
       ctx.scale(g.facing, 1);
-      ctx.drawImage(img, -drawW / 2, -drawH, drawW, drawH);
+      drawSpriteNormalized(gImg, targetH);
       ctx.restore();
     });
 
@@ -1391,33 +1549,91 @@
     ctx.save();
     ctx.translate(f.x, f.y);
 
-    let bobY = Math.sin(f.bobPhase) * 4;
+    let bobY = Math.sin(f.bobPhase) * 3.5;
     let tilt = 0;
+    let scaleX = 1;
     let scaleY = 1;
     let shiftX = 0;
 
-    if (f.def.id === 'alexandre' && f.state === 'idle') tilt = Math.sin(f.bobPhase * 0.7) * 0.06;
-    if (f.def.isMoto) bobY = Math.sin(f.bobPhase * 1.8) * 3;
+    // Subtle breathing in idle
+    if (f.state === 'idle') {
+      scaleY = 1 + Math.sin(f.bobPhase) * 0.015;
+      scaleX = 1 - Math.sin(f.bobPhase) * 0.01;
+      if (f.def.id === 'alexandre') tilt = Math.sin(f.bobPhase * 0.7) * 0.04;
+    }
+
+    if (f.def.isMoto && (f.state === 'idle' || f.state === 'walk')) {
+      bobY = Math.sin(f.bobPhase * 2.2) * 2.5;
+    }
+
+    // Smooth transition impulse when switching states
+    if (f.transitionTimer > 0) {
+      const tr = f.transitionTimer / 6;
+      scaleX *= 1 + tr * 0.045;
+      scaleY *= 1 - tr * 0.04;
+    }
+
+    // Landing squash recovery
+    if (f.landTimer > 0) {
+      const ld = f.landTimer / 8;
+      scaleX *= 1 + ld * 0.08;
+      scaleY *= 1 - ld * 0.08;
+    }
+
     if (f.state === 'walk') {
-      tilt = f.facing * 0.08;
-      bobY = Math.abs(Math.sin(f.bobPhase * 2.2)) * -7;
+      const moveDir = Math.sign(f.vx) || f.facing;
+      const walkCycle = Math.sin(f.animTime * 0.36);
+      tilt = (moveDir * f.facing) * 0.05 + walkCycle * 0.025;
+      bobY = -Math.abs(walkCycle) * 7;
+      scaleX *= 1 + Math.sin(f.animTime * 0.72) * 0.02;
     } else if (f.state === 'dash') {
-      tilt = f.facing * 0.24;
+      tilt = (Math.sign(f.vx) * f.facing) * 0.16;
       bobY = -6;
+      scaleX *= 1.05;
+      scaleY *= 0.95;
+    } else if (f.state === 'jump' || (f.y < GROUND_Y - 2 && !['basic1', 'basic2', 'special', 'special2', 'fallen', 'ko'].includes(f.state))) {
+      const airTilt = Math.max(-0.12, Math.min(0.12, f.vy * 0.008));
+      tilt = airTilt;
+      if (Math.abs(f.vy) > 6) {
+        scaleY *= 1.04;
+        scaleX *= 0.96;
+      } else {
+        scaleY *= 0.97;
+        scaleX *= 1.03;
+      }
     } else if (f.state === 'crouch') {
-      scaleY = 0.76;
-    } else if (f.state === 'basic1') {
-      tilt = f.facing * 0.20;
-      shiftX = f.facing * 26;
-    } else if (f.state === 'basic2') {
-      tilt = f.facing * -0.16;
-      shiftX = f.facing * 24;
-      bobY = -12;
+      scaleY *= 0.80;
+      scaleX *= 1.06;
+    } else if (f.state === 'basic1' || f.state === 'basic2') {
+      const total = f.stateDuration || (f.state === 'basic1' ? 18 : 24);
+      const prog = Math.max(0, Math.min(1, 1 - f.stateTimer / total));
+      // 3-phase attack curve: windup -> active lunge -> recovery
+      let lunge = 0;
+      if (prog < 0.2) {
+        lunge = -(prog / 0.2) * 0.3;
+      } else if (prog < 0.65) {
+        lunge = 1.0;
+        scaleX *= 1.05;
+      } else {
+        lunge = 1.0 - (prog - 0.65) / 0.35;
+      }
+      shiftX = f.facing * (f.state === 'basic2' ? 28 : 22) * lunge;
+      tilt = f.facing * (f.state === 'basic2' ? 0.08 : 0.05) * lunge;
+      bobY = f.state === 'basic2' ? -8 * lunge : -3 * lunge;
     } else if (f.state === 'special' || f.state === 'special2') {
-      tilt = f.def.isMoto ? f.facing * -0.25 : f.facing * 0.16;
-      bobY = -10;
+      const total = f.stateDuration || 34;
+      const prog = Math.max(0, Math.min(1, 1 - f.stateTimer / total));
+      const pulse = Math.sin(prog * Math.PI);
+      shiftX = f.facing * 18 * pulse;
+      bobY = -8 * pulse;
+      scaleX *= 1 + pulse * 0.05;
+      scaleY *= 1 + pulse * 0.05;
+      tilt = f.def.isMoto ? -f.facing * 0.04 : f.facing * 0.06 * pulse;
     } else if (f.state === 'hurt') {
-      tilt = -f.facing * 0.24;
+      tilt = -f.facing * 0.22;
+      shiftX = -f.facing * 10;
+      scaleX *= 0.96;
+      scaleY *= 1.04;
     } else if (f.state === 'fallen') {
       tilt = -f.facing * 1.25;
       bobY = -14;
@@ -1430,7 +1646,7 @@
 
     ctx.translate(shiftX, bobY);
     ctx.rotate(tilt);
-    ctx.scale(f.facing, scaleY);
+    ctx.scale(f.facing, 1);
 
     if (f.def.id === 'larissa' || f.state === 'special' || f.state === 'special2') {
       ctx.shadowColor = f.def.color;
@@ -1441,9 +1657,7 @@
       ctx.filter = 'brightness(2.2) saturate(0.2)';
     }
 
-    if (img.complete && img.naturalWidth > 0) {
-      ctx.drawImage(img, -drawW / 2, -drawH, drawW, drawH);
-    }
+    const { drawW, drawH } = drawSpriteNormalized(img, targetH, scaleX, scaleY);
 
     ctx.shadowBlur = 0;
     ctx.filter = 'none';
@@ -1611,41 +1825,36 @@
   function drawSummon(s) {
     ctx.save();
     if (s.kind === 'larissa_assist') {
-      const img = spriteImages['larissa'];
-      if (img.complete) {
+      const img = getFighterSpriteByKey('larissa', 'attack');
+      if (img && img.complete) {
         ctx.translate(s.x, s.y - 28);
         ctx.scale(s.dir, 1);
-        ctx.rotate(0.24);
+        ctx.rotate(0.18);
         ctx.shadowColor = '#c026d3';
         ctx.shadowBlur = 22;
-        const h = 240;
-        const w = h * (img.naturalWidth / img.naturalHeight);
-        ctx.drawImage(img, -w / 2, -h, w, h);
+        drawSpriteNormalized(img, 240);
       }
     } else if (s.kind === 'chained_pair') {
       // Thiago & Saulo ACORRENTADOS com correntes metálicas realistas!
-      const tImg = spriteImages['thiago'];
-      const sImg = spriteImages['saulo'];
+      const stepPose = Math.floor(s.life / 6) % 2 === 0 ? 'move' : 'jump';
+      const tImg = getFighterSpriteByKey('thiago', stepPose);
+      const sImg = getFighterSpriteByKey('saulo', stepPose);
       const bounce = Math.abs(Math.sin(s.life * 0.35)) * 16;
       const tx = s.x - s.dir * 52;
       const sx = s.x + s.dir * 52;
 
-      if (tImg.complete) {
-        const h = 232;
-        const w = h * (tImg.naturalWidth / tImg.naturalHeight);
+      if (tImg && tImg.complete) {
         ctx.save();
         ctx.translate(tx, s.y - bounce);
         ctx.scale(s.dir, 1);
-        ctx.drawImage(tImg, -w / 2, -h, w, h);
+        drawSpriteNormalized(tImg, 232);
         ctx.restore();
       }
-      if (sImg.complete) {
-        const h = 242;
-        const w = h * (sImg.naturalWidth / sImg.naturalHeight);
+      if (sImg && sImg.complete) {
         ctx.save();
         ctx.translate(sx, s.y - bounce * 0.7);
         ctx.scale(s.dir, 1);
-        ctx.drawImage(sImg, -w / 2, -h, w, h);
+        drawSpriteNormalized(sImg, 242);
         ctx.restore();
       }
 
